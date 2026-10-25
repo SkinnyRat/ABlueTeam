@@ -1,0 +1,104 @@
+# Suricata RAM/streamlining overrides for the lab — MERGE these sections into
+# /etc/suricata/suricata.yaml on san (.1). These are the knobs that matter after
+# the rule trim (disable.conf + enable.conf). Rule count is the #1 lever; these
+# are #2.
+
+# ----------------------------------------------------------------------------
+# Detection engine: trade throughput for memory. `low` builds smaller
+# signature-group tables; fine at lab traffic volumes.
+detect:
+  profile: low
+  sgh-mpm-context: single
+  inspection-recursion-limit: 3000
+
+# Pattern matcher. `ac` (Aho-Corasick) is the balanced default. If san is really
+# tight, `ac-bs` (bitstate) uses the least RAM at some CPU cost. Use `hs`
+# (Hyperscan) only if you have CPU headroom and want speed -- it builds larger DBs.
+mpm-algo: ac
+
+# ----------------------------------------------------------------------------
+# Capture. Point Suricata at the interface(s) where lab traffic actually flows.
+# See Telemetry_pipeline.md for the per-scenario interface map and the GOAD NAT
+# caveat. One worker thread is plenty for lab volumes.
+af-packet:
+  - interface: wg0            # ingress from red (.3) / blue (.2): web + kube + AD requests
+    threads: 1
+    cluster-id: 99
+    cluster-type: cluster_flow
+    defrag: yes
+    use-mmap: yes
+    ring-size: 2048
+  # Add the active scenario bridge so you see BOTH directions with real IPs:
+  #   web/docker  -> the range bridge (e.g. rng0)
+  #   GOAD        -> the VirtualBox host-only iface (e.g. vboxnet0) -- REQUIRED to
+  #                  see AD replies, which are NAT'd off wg0
+  # - interface: vboxnet0
+  #     threads: 1
+  #     cluster-id: 98
+  #     cluster-type: cluster_flow
+
+# ----------------------------------------------------------------------------
+# Flow / stream memory: sized for a low-traffic lab (defaults are bigger).
+flow:
+  memcap: 64mb
+  hash-size: 65536
+  prealloc: 10000
+
+stream:
+  memcap: 64mb
+  reassembly:
+    memcap: 128mb
+
+# ----------------------------------------------------------------------------
+# App-layer: parse only the protocols in play (web + AD). Disabling the rest
+# trims parser state. Toggle as your scenarios change.
+app-layer:
+  protocols:
+    http:   { enabled: yes }
+    tls:    { enabled: yes }
+    dns:    { enabled: yes }
+    smb:    { enabled: yes }
+    dcerpc: { enabled: yes }
+    krb5:   { enabled: yes }
+    ldap:   { enabled: yes }   # requires a recent Suricata; comment out if unknown key
+    ssh:    { enabled: yes }
+    ftp:    { enabled: no }
+    smtp:   { enabled: no }
+    nfs:    { enabled: no }
+    tftp:   { enabled: no }
+    ikev2:  { enabled: no }
+    dhcp:   { enabled: no }
+    snmp:   { enabled: no }
+    sip:    { enabled: no }
+    rdp:    { enabled: yes }
+    modbus: { enabled: no }
+    dnp3:   { enabled: no }
+    enip:   { enabled: no }
+
+# ----------------------------------------------------------------------------
+# Keep eve.json lean but useful. This is what Fluent Bit tails. Trim event types
+# you won't analyze to cut volume (and disk) without losing attack signal.
+outputs:
+  - eve-log:
+      enabled: yes
+      filetype: regular
+      filename: /var/log/suricata/eve.json
+      types:
+        - alert:
+            metadata: yes
+            tagged-packets: no
+        - http:
+            extended: yes
+        - dns:
+            query: yes
+            answer: yes
+        - tls:
+            extended: yes
+        - smb
+        - dcerpc
+        - krb5
+        - ldap
+        - flow          # drop this one if volume gets noisy; it's the chattiest
+        - anomaly:
+            types:
+              applayer: yes
