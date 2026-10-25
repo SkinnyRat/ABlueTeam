@@ -6,7 +6,7 @@
 ##! pipeline, each tagged `# [lab]` below:
 ##!   1. JSON log output (so Fluent Bit ships uniform NDJSON)
 ##!   2. file hashing + Malware Hash Registry turned OFF
-##!   3. Weird/DPD noise streams disabled
+##!   3. Weird noise stream disabled
 ##! Stock detections worth keeping are left ON: http/detect-sql-injection,
 ##! conn/known-hosts + known-services (asset inventory), ssh/detect-bruteforcing.
 
@@ -136,7 +136,10 @@ redef LogAscii::use_json = T;
 event zeek_init()
     {
     Log::disable_stream(Weird::LOG);
-    Log::disable_stream(DPD::LOG);
+    # Note: recent Zeek (5.0+) removed the old DPD module -- dpd.log became
+    # analyzer.log. To also silence that, add (verify the identifier on your
+    # version first, or it won't load):
+    #   Log::disable_stream(Analyzer::Logging::LOG);
     }
 
 # [lab] RAM note (operational, not a setting): run Zeek SINGLE-NODE. `zeek -i
