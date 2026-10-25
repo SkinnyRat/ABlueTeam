@@ -2,11 +2,12 @@
 ##!
 ##! This file will not be overwritten when upgrading or reinstalling!
 ##!
-##! LAB MERGE: this is san's stock local.zeek with three changes for the blue-team
+##! LAB MERGE: this is san's stock local.zeek with changes for the blue-team
 ##! pipeline, each tagged `# [lab]` below:
 ##!   1. JSON log output (so Fluent Bit ships uniform NDJSON)
-##!   2. file hashing + Malware Hash Registry turned OFF
+##!   2. ignore_checksums (required to log traffic captured on wg0)
 ##!   3. Weird noise stream disabled
+##!   - file hashing + Malware Hash Registry turned OFF
 ##! Stock detections worth keeping are left ON: http/detect-sql-injection,
 ##! conn/known-hosts + known-services (asset inventory), ssh/detect-bruteforcing.
 
@@ -129,6 +130,14 @@ redef digest_salt = "Please change this value.";
 
 # [lab] 1. JSON output so Fluent Bit ships uniform NDJSON (one record per line).
 redef LogAscii::use_json = T;
+
+# [lab] 2. Ignore bad checksums. On wg0 (a tunnel/virtual interface) and with NIC
+#       offloading, L3/L4 checksums in captured packets are often "wrong", and Zeek
+#       DROPS bad-checksum packets by default -- so it sees the traffic but logs
+#       nothing (while Suricata, trusting the kernel, logs fine). This is THE usual
+#       cause of "Suricata has hits but Zeek is silent" on the same interface.
+#       Equivalent to running `zeek -C`.
+redef ignore_checksums = T;
 
 # [lab] 3. Drop high-noise, low-value streams for a lab (cuts log I/O; the
 #          analyzers still run, we just stop logging these). Comment a line back
