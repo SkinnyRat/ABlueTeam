@@ -1,0 +1,7 @@
+# Core pipeline is stdlib-only (Python 3.11+). Extras are per-backend, optional:
+#
+#   Tier 1/2 via Claude API:
+anthropic>=0.40.0
+#
+#   Local fallback uses Ollama's HTTP API (no Python dep) — install the Ollama
+#   server separately and `ollama pull qwen2.5:7b-instruct`.
