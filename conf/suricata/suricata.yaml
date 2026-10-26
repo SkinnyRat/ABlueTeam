@@ -737,6 +737,17 @@ af-packet:
     # https://redmine.openinfosecfoundation.org/issues/7585
     #disable-hwtimestamp: false
 
+  # [lab] GOAD / Active Directory visibility. vboxnet0 is the VirtualBox host-only
+  # iface where GOAD replies land -- they are NAT'd off wg0, so wg0 sees only the
+  # attacker->target half. Distinct cluster-id so it does not collide with wg0's
+  # AF_PACKET socket cluster. The iface must exist when Suricata starts, so bring
+  # the GOAD VMs up before restarting (else af-packet fails to open it).
+  - interface: vboxnet0
+    threads: 1
+    cluster-id: 98
+    cluster-type: cluster_flow
+    defrag: yes
+
   # Put default values here. These will be used for an interface that is not
   # in the list above.
   - interface: default
