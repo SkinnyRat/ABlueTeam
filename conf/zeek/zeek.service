@@ -1,0 +1,20 @@
+[Unit]
+Description=Zeek IDS (zeekctl deploy)
+# Zeek sniffs wg0, which wg-quick brings up late (it is ordered After=docker.service
+# on san -- see Wireguard.md). If Zeek starts before wg0 exists it cannot open the
+# capture interface and dies instantly -> zeekctl status shows "crashed". Order after
+# the interface and wait for it below.
+After=network-online.target docker.service wg-quick@wg0.service
+Wants=network-online.target
+Requires=wg-quick@wg0.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# Wait up to ~30s for the capture interface to actually exist before deploying.
+ExecStartPre=/bin/bash -c 'for i in $(seq 1 30); do ip link show wg0 >/dev/null 2>&1 && exit 0; sleep 1; done; echo "wg0 never appeared" >&2; exit 1'
+ExecStart=/opt/zeek/bin/zeekctl deploy
+ExecStop=/opt/zeek/bin/zeekctl stop
+
+[Install]
+WantedBy=multi-user.target

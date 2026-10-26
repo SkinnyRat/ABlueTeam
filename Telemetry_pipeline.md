@@ -137,6 +137,48 @@ ldap, rdp) are on by default — nothing to add.
 
 ---
 
+## Zeek boot start — survive the wg0 race
+
+**Symptom:** after a reboot `zeekctl status` shows `crashed`, but `zeekctl deploy`
+run by hand brings it straight to `running`. That rules out a policy bug (a broken
+`local.zeek` would fail `deploy` too) — it's a **startup race**. Zeek sniffs `wg0`,
+and on san `wg0` is brought up by `wg-quick@wg0`, which is itself ordered
+`After=docker.service` (see [Wireguard.md](Wireguard.md)) and so comes up late. If
+Zeek is started before `wg0` exists it can't open the capture interface and dies
+instantly. By the time you log in and `deploy`, `wg0` is up, so it works.
+
+Confirm the cause from the crash report:
+
+```bash
+sudo /opt/zeek/bin/zeekctl diag        # look for: problem with interface wg0 / No such device
+```
+
+**Fix:** start Zeek from a systemd unit ordered after the interface, with a guard
+that waits for `wg0` to appear. Unit: [conf/zeek/zeek.service](conf/zeek/zeek.service).
+
+```bash
+sudo cp conf/zeek/zeek.service /etc/systemd/system/zeek.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now zeek.service
+```
+
+**Self-heal net:** enable zeekctl's cron so a node that ever crashes is redeployed
+within 5 min (append — don't clobber root's existing crontab):
+
+```bash
+( sudo crontab -l 2>/dev/null; echo '*/5 * * * * /opt/zeek/bin/zeekctl cron' ) | sudo crontab -
+```
+
+**Cleanup:** remove any older racing starter (an `@reboot` cron, an ad-hoc init
+script, a prior unit) so it can't fire before `wg0` and re-trigger the crash:
+
+```bash
+sudo crontab -l 2>/dev/null | grep -i zeek
+grep -rIl zeek /etc/cron* 2>/dev/null
+```
+
+---
+
 ## Interface placement (both sensors)
 
 Point each sensor at the interface where the traffic actually flows on san:
