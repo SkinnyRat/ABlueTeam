@@ -18,7 +18,7 @@ mpm-algo: ac
 
 # ----------------------------------------------------------------------------
 # Capture. Point Suricata at the interface(s) where lab traffic actually flows.
-# See Telemetry_pipeline.md for the per-scenario interface map and the GOAD NAT
+# See docs/Telemetry_pipeline.md for the per-scenario interface map and the GOAD NAT
 # caveat. One worker thread is plenty for lab volumes.
 af-packet:
   - interface: wg0            # ingress from red (.3) / blue (.2): web + kube + AD requests

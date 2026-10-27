@@ -154,6 +154,6 @@ event zeek_init()
 # [lab] RAM note (operational, not a setting): run Zeek SINGLE-NODE. `zeek -i
 #       <iface> local`, or zeekctl with ONE worker in node.cfg. Cluster mode
 #       (manager + proxy + N workers) multiplies memory for nothing at lab volumes.
-#       Interface placement (see Telemetry_pipeline.md): wg0 for web/kube, the
+#       Interface placement (see docs/Telemetry_pipeline.md): wg0 for web/kube, the
 #       VirtualBox host-only iface (e.g. vboxnet0) for GOAD/AD (replies are NAT'd
 #       off wg0).

@@ -1,7 +1,7 @@
 [Unit]
 Description=Zeek IDS (zeekctl deploy)
 # Zeek sniffs wg0, which wg-quick brings up late (it is ordered After=docker.service
-# on san -- see Wireguard.md). If Zeek starts before wg0 exists it cannot open the
+# on san -- see docs/Wireguard.md). If Zeek starts before wg0 exists it cannot open the
 # capture interface and dies instantly -> zeekctl status shows "crashed". Order after
 # the interface and wait for it below.
 After=network-online.target docker.service wg-quick@wg0.service

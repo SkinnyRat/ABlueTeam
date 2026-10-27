@@ -7,7 +7,7 @@ hands each finding to an LLM for triage.
 > **This is NDR, not EDR.** It sees only the wire (via the `.1` gateway). On-host
 > tradecraft — LSASS dumping, local privesc, forged tickets — is invisible until a
 > host agent (Sysmon/Wazuh) is added on the GOAD VMs. See
-> [../IDS_monitoring.md](../IDS_monitoring.md) for the full visibility matrix.
+> [../docs/IDS_monitoring.md](../docs/IDS_monitoring.md) for the full visibility matrix.
 
 ## Design: rules detect, the LLM triages
 
