@@ -38,10 +38,14 @@ _VERDICTS = {"true_positive", "false_positive", "needs_review"}
 
 
 def _build_user_prompt(f: Finding) -> str:
+    enrichment = ""
+    if f.enrichment:
+        enrichment = f"Enrichment (derived aggregates):\n{json.dumps(f.enrichment, indent=2)[:2000]}\n"
     return (
         f"Detector: {f.detector}\nSeverity: {f.severity}\nATT&CK: {', '.join(f.attack) or 'n/a'}\n"
         f"Title: {f.title}\nRule summary: {f.summary}\n"
         f"Source: {f.src_ip} -> {f.dst_ip}\n"
+        f"{enrichment}"
         f"Evidence (sensor records):\n{json.dumps(f.evidence[:5], indent=2)[:4000]}"
     )
 

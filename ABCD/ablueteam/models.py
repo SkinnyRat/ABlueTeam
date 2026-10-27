@@ -83,6 +83,10 @@ class Finding:
     dst_ip: str | None = None
     summary: str = ""               # rule-generated one-liner (no LLM)
     evidence: list[dict[str, Any]] = field(default_factory=list)  # raw records that justify it
+    # Structured context a detector derives on top of the raw evidence (aggregates,
+    # breadth, corroborating signals). Consumed by triage so the LLM reasons over the
+    # whole picture, not one record. Kept separate so `evidence` stays raw sensor data.
+    enrichment: dict[str, Any] | None = None
     triage: dict[str, Any] | None = None   # filled by the triage layer
 
     def to_dict(self) -> dict[str, Any]:
@@ -97,5 +101,6 @@ class Finding:
             "summary": self.summary,
             "evidence_count": len(self.evidence),
             "evidence": self.evidence,
+            "enrichment": self.enrichment,
             "triage": self.triage,
         }

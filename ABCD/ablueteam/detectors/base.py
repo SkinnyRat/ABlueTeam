@@ -32,6 +32,20 @@ class SlidingWindow:
             self._buckets.pop(key, None)
         return dq
 
+    def current(self, key: object, ts: float) -> deque | tuple:
+        """Evict entries older than `ts - window` for `key`, then return what
+        remains — a read-only peek with no new item added."""
+        dq = self._buckets.get(key)
+        if dq is None:
+            return ()
+        cutoff = ts - self.window
+        while dq and dq[0][0] < cutoff:
+            dq.popleft()
+        if not dq:
+            self._buckets.pop(key, None)
+            return ()
+        return dq
+
 
 class Detector(ABC):
     name: str = "detector"

@@ -48,7 +48,7 @@ ablueteam/
   dedup.py             collapses the dual-iface GOAD double-count
   detectors/
     base.py            Detector ABC + per-key SlidingWindow
-    scan_recon.py      network scan / port fan-out        (T1046, T1595)
+    scan_recon.py      scan campaign aggregation (per src) (T1046, T1595)
     ldap_recon.py      BloodHound-style LDAP enumeration   (T1087.002, T1069.002)
     kerberoast.py      Kerberoasting / AS-REP roasting     (T1558.003/.004)
   triage.py            LLM triage interface + heuristic/anthropic/ollama backends
@@ -60,9 +60,14 @@ ablueteam/
 
 Implemented (Tier 0): scan/recon, LDAP enumeration, Kerberoasting/AS-REP.
 
+The scan detector aggregates per source into one **scan campaign** across all
+targets (vertical / horizontal / block shape) and attaches an enrichment block
+(breadth, per-host port sets, corroborating ET signatures) that triage reasons
+over — see `detectors/scan_recon.py`.
+
 Next up: SMB enumeration (tree connects to ADMIN$/C$/IPC$), DCE-RPC lateral
-movement (PsExec/svcctl via Zeek `dce_rpc`), password-spray (AS-REQ→KRB_ERROR
-fan-out), and campaign-level aggregation for the scan detector.
+movement (PsExec/svcctl via Zeek `dce_rpc`), and password-spray (AS-REQ→KRB_ERROR
+fan-out).
 
 ## Known gaps / TODO
 
@@ -70,4 +75,3 @@ fan-out), and campaign-level aggregation for the scan detector.
   key and links Suricata↔Zeek records for the same flow.
 - Zeek is **wg0-only**, so AD *replies* aren't Zeek-logged; add vboxnet to
   `node.cfg` for both directions (needed for stream reassembly on some detectors).
-- Scan detector fires per (src,dst); aggregate to one campaign per source.
