@@ -1,0 +1,29 @@
+#### Cyber Range 
+
+So far so good. 
+
+==== 
+
+#### Red Team 
+
+AAA 
+
+PentestGPT using Claude ==> ?? 
+
+==== 
+
+#### Blue Team 
+
+AI only captures nmap traffic for GOAD. 
+
+:warning: Suricata & Zeek can see normal web traffic BUT dont catch anything when Red AI is running! 
+
+==== 
+
+#### Next Steps 
+
+1. Install CRS-nginx + Wazuh on Range? 
+2. $`\color{#a371f7}\textsf{Re-work this to follow more standardized methodology.}`$ 
+3. Investigate how to improve Blue Team detection IQ. 
+4. Alternate between Red & Blue teams :bangbang: 
+
