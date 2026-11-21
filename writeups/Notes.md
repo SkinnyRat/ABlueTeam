@@ -8,7 +8,7 @@ So far so good.
 
 Qwen 14B and Whiterabbit Q6 capped 0 flags; is it due to running non-whitelisted commands :question::question: 
 
-PentestGPT using Claude ==> Coming soon... 
+PentestGPT using Claude ==> Capped all 4 flags, spent $1.17 ; however $2.33 spent when wrong IP entered as target. 
 
 --- 
 
